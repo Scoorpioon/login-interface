@@ -4,30 +4,13 @@ const handleBars = require('express-handlebars');
 const path = require('path');
 const mongoose = require('mongoose');
 const Usuarios = require('./models/Usuarios');
-const flash = require('connect-flash');
-const session = require('express-session');
-const Cadastro = require('./routes/Cadastro');
 const Login = require('./routes/Login');
-const localStrategy = require('passport-local').Strategy;
+const Cadastro = require('./routes/Cadastro');
+const passport = require('passport');
+const session = require('express-session');
+require('./config/auth')(passport);
 
 // Config
-    // Session
-        app.use(session({
-            secret: 'CANIGETBACKTOTHEP4ST',
-            resave: true,
-            saveUninitialized: true,
-            cookie: {secure: true}
-        }));
-
-        app.use(flash());
-
-    // Midddleware
-        app.use((req, res, next) => {
-            res.locals.success_msg = req.flash('success_msg');
-            res.locals.error_msg = req.flash('error_msg');
-            next();
-        });
-
     app.use(express.urlencoded({extended: true}));
     app.use(express.json());
 
@@ -44,16 +27,26 @@ const localStrategy = require('passport-local').Strategy;
             console.log('Ocorreu um erro ao se conectar ao BD: ', error);
         });
 
+    // Session
+    app.use(session({
+        secret: 'CANIGETBACKTOTHEP4ST',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {maxAge: 2 * 60 * 1000}
+    }));
+    app.use(passport.session());
+    app.use(passport.initialize());
+
 // Routes
     app.get('/', (req, res) => {
         res.render('interface');
     });
 
     app.use('/login', Login);
-    app.use('/cadastrar', Cadastro);
+    app.use('/cadastro', Cadastro);
 
 // Ending
-    const PORT = 1337;
+    const PORT = 8080;
     app.listen(PORT, () => {
-        console.log('Servidor iniciado!', PORT);
+        console.log('Servidor iniciado!', PORT)
     });
