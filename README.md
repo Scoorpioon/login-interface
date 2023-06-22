@@ -60,11 +60,9 @@ Adicione notas adicionais sobre como implantar isso em um sistema ativo
 
 ## 🛠️ Construído com
 
-Mencione as ferramentas que você usou para criar seu projeto
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - O framework web usado
-* [Maven](https://maven.apache.org/) - Gerente de Dependência
-* [ROME](https://rometools.github.io/rome/) - Usada para gerar RSS
+* [NodeJS](https://nodejs.org/en) - Ambiente de execução
+* [Express](https://expressjs.com/pt-br/) - Framework do NodeJS utilizado
+* [Bootstrap](https://getbootstrap.com) - Framework CSS
 
 ## 🖇️ Colaborando
 
