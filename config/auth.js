@@ -1,64 +1,56 @@
 const bcrypt = require('bcryptjs');
-const Usuarios = require('../models/Usuarios');
 const localStrategy = require('passport-local').Strategy;
+const Usuarios = require('../models/Usuarios');
 
 async function buscarUsuario(prop, param) {
     try {
         const usuarioBuscado = await Usuarios.findOne({[prop]: param});
         /* console.log(usuarioBuscado) */
-        return await usuarioBuscado;
+        return usuarioBuscado;
     } catch(error) {
         console.log('Erro na busca: ' + error);
     };
 };
 
-/* const usuarioDeteste = [{
-    _id: 1,
-    nome: 'Usuario de teste',
-    idade: '30',
-    email: 'usuario@email.com',
-    senha: '$2a$06$HT.EmXYUUhNo3UQMl9APmeC0SwoGsx7FtMoAWdzGicZJ4wR1J8alW'
-}]; */
-
-module.exports = (passport) => {
+module.exports = (passport) => { 
     passport.serializeUser((user, done) => {
-        done(null, user._id)
-    });
+        done(null, user.nome) // 1º Parâmetro: Erro, 2° Parâmetro: Informação do usuário que será salva
+    }) // Gera um cookie no navegador e uma session no código com os dados do usuário
 
-    passport.deserializeUser((id, done) => {
+    passport.deserializeUser((name, done) => {
         try {
-            const usuario = buscarUsuario('_id', id);
-            done(null, usuario);
+            buscarUsuario('nome', name).then((dado) => {
+                done(null, dado);
+            });
 
-        } catch(error) {
-            console.log('Erro no usuário: ' + error);
-            return done(error, null);
+        } catch(erro) {
+            console.log('Erro no deserialize: ', erro);
+            done(null, erro);
         };
     });
 
-    passport.use(new localStrategy({
-        usernameField: 'email',
-        passwordField: 'senha'
-    }, (email, senha, done) => {
+    passport.use(new localStrategy({usernameField: 'email', passwordField: 'senha'}, (email, senha, done) => {
         try{
-            console.log('Senha pesquisada no banco: ' + senha)
-            const usuario = buscarUsuario('email', email);
-            usuario.then((valor) => {
-                const validado = bcrypt.compareSync(senha, valor.senha);
-                if(!usuario) {
-                    return done(null, false);
-                }
-    
-                if(!validado) {
-                    return done(null, false);
-                } else {
-                    return done(null, usuario)
-                }
-            });
-        } catch(error) {
-            console.log('Erro ocorrido na autenticação: ' + error);
-            done(error, false);
-        };
-    }));
+            buscarUsuario('email', email).then((usuario) => {
+                console.log(usuario);
 
+                if(!usuario) {
+                    console.log('Usuário não encontrado no banco de dados;');
+                    done(null, false);
+                };
+    
+                if(senha != usuario.senha) {
+                    console.log('As senhas não bateram;');
+                    done(null, false);
+                };
+    
+                done(null, usuario);
+            });
+
+
+        } catch(erro) {
+            console.log('Erro na requisição de dados do formulário: ', erro);
+            done(null, false);
+        }
+    })); // 1° Parâmetro: Quais campos do login serão utilizados para a autenticação. 2°: Campos que foram recebidos e o callback;
 };
