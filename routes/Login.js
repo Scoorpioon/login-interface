@@ -14,12 +14,14 @@ require('../config/auth')(passport);
         }
     });
 
+    router.post('/logado', (req, res) => {
+        res.send(`Logado com sucesso, ${req.body}!`);
+    });
+
     router.post('/autenticar', passport.authenticate('local', {
-        successRedirect: '/',
+        successRedirect: '/login/logado',
         failureRedirect: '/login?fail=true'
-    }) ,(req, res) => {
-        res.render('logado');
-    })
+    }));
 
 // Ending
 module.exports = router;
